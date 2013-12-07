@@ -2,7 +2,8 @@
 #define LEFT_WHEEL 11
 #define GOBUTTON 9
 
-#define SENSOR 7
+#define TILT 4
+#define VIBRATION 7
 
 #define PWM_MIDPOINT 128
 #define SPEED 64
@@ -10,6 +11,7 @@
 #define TERMBAUD 115200
 
 bool wasVibro = false;
+bool wasTilted = false;
 
 //-------------------------------------------------------------
 
@@ -18,7 +20,8 @@ void setup()
 	pinMode(RIGHT_WHEEL, OUTPUT);
 	pinMode(LEFT_WHEEL, OUTPUT);
 	pinMode(GOBUTTON, INPUT);
-	pinMode(SENSOR, INPUT);
+	pinMode(VIBRATION, INPUT);
+	pinMode(TILT, INPUT);
 
 	Serial.begin(TERMBAUD);
 	Serial.println("ExplorerBot test one.");
@@ -26,20 +29,36 @@ void setup()
 
 void loop()
 {
-	int v = digitalRead(SENSOR);
+	int v = digitalRead(VIBRATION);
 	if (v > 0)
 	{
 		if (!wasVibro)
 		{
 			wasVibro = true;
-			Serial.println("vibration!");
+			Serial.println("~ vibration!");
 		}
 	}
 	else if (wasVibro)
 	{
-		Serial.println("    still again");
+		Serial.println("    _ still again");
 		wasVibro = false;
 	}
+
+	int t = digitalRead(TILT);
+	if (t > 0)
+	{
+		if (!wasTilted)
+		{
+			wasTilted = true;
+			Serial.println("/ tilt");
+		}
+	}
+	else if (wasTilted)
+	{
+		Serial.println("    | upright again");
+		wasTilted = false;
+	}
+
 	readSerialCommand();
 }
 
