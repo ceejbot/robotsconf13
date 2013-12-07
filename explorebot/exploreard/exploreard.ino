@@ -1,6 +1,9 @@
-#define MOTOR1 10
-#define MOTOR2 11
+#define RIGHT_WHEEL 10
+#define LEFT_WHEEL 11
 #define GOBUTTON 9
+
+#define PWM_MIDPOINT 128
+#define SPEED 64
 
 #define TERMBAUD 115200
 
@@ -8,79 +11,134 @@
 
 void setup()
 {
-    pinMode(MOTOR1, OUTPUT);
-    pinMode(MOTOR2, OUTPUT);
-    pinMode(GOBUTTON, INPUT);
+	pinMode(RIGHT_WHEEL, OUTPUT);
+	pinMode(LEFT_WHEEL, OUTPUT);
+	pinMode(GOBUTTON, INPUT);
 
-    Serial.begin(TERMBAUD);
-    Serial.println("ExplorerBot test one.");
+	Serial.begin(TERMBAUD);
+	Serial.println("ExplorerBot test one.");
 }
 
 void loop()
 {
-    readSerialCommand();
+	readSerialCommand();
 }
 
 //-------------------------------------------------------------
 
-void runMotor(int level)
+void omghelp(int ln)
 {
-    if (level < 0)
-        level = 0;
-    else if (level > 255)
-        level = 255;
+	Serial.print("OMG HELP @");
+	Serial.print(ln, DEC);
+	Serial.println("!");
+}
+#define OMGHELP() omghelp(__LINE__)
 
-    analogWrite(MOTOR1, 255 + level);
-    analogWrite(MOTOR2, 255 - level);
+void forward(int duration)
+{
+	Serial.println("forward");
+	analogWrite(RIGHT_WHEEL, 150);
+	analogWrite(LEFT_WHEEL, 200);
 }
 
-void move()
+void reverse(int duration)
 {
-    Serial.println("moving");
-    runMotor(45);
+	Serial.println("reverse");
+	analogWrite(RIGHT_WHEEL, 200);
+	analogWrite(LEFT_WHEEL, 150);
 }
 
-void stop()
+void turnRight(int duration)
 {
-    Serial.println("stopping");
-    runMotor(0);
+	Serial.println("right turn");
+	analogWrite(RIGHT_WHEEL, 225);
+	analogWrite(LEFT_WHEEL, 225);
+	delay(duration);
+	analogWrite(RIGHT_WHEEL, 0);
+	analogWrite(LEFT_WHEEL, 00);
+}
+
+void turnLeft(int duration)
+{
+	Serial.println("left turn");
+	analogWrite(LEFT_WHEEL, 150);
+	analogWrite(RIGHT_WHEEL, 150);
+	delay(duration);
+	analogWrite(RIGHT_WHEEL, 0);
+	analogWrite(LEFT_WHEEL, 00);
 }
 
 void zero()
 {
-    Serial.println("Hard stop.");
-    analogWrite(MOTOR1, 0);
-    analogWrite(MOTOR2, 0);
+	Serial.println("Hard stop.");
+	analogWrite(RIGHT_WHEEL, 0);
+	analogWrite(LEFT_WHEEL, 0);
+}
+
+void calibration()
+{
+	Serial.println("Writing 180 to each motor");
+	analogWrite(RIGHT_WHEEL, 180);
+	analogWrite(LEFT_WHEEL, 180);
 }
 
 void help()
 {
-    Serial.println("OMG HELP!");
+	Serial.println('help:  WASD to move; z to panic stop.');
+}
+
+void trySpeeds()
+{
+	int i;
+	for (i = 0; i < 180; i += 10)
+	{
+		Serial.print(i, DEC);
+		Serial.println("!");
+		analogWrite(LEFT_WHEEL, 180 - i);
+		analogWrite(RIGHT_WHEEL, 180 + i);
+		delay(5000);
+	}
 }
 
 void readSerialCommand()
 {
-    if (Serial.available())
-    {
-        char command = Serial.read();
+	if (Serial.available())
+	{
+		char command = Serial.read();
 
-        switch (command)
-        {
-            case 'h':
-                help();
-                break;
+		switch (command)
+		{
+			case 'h':
+				help();
+				break;
 
-            case 'g':
-                move();
-                break;
+			case 'w':
+				forward(1000);
+				break;
 
-            case 's':
-                stop();
-                break;
+			case 's':
+				reverse(1000);
+				break;
 
-            case 'z':
-                zero();
-                break;
-        }
-    }
+			case 'a':
+				turnLeft(750);
+				break;
+
+			case 'd':
+				turnRight(750);
+				break;
+
+			case 'z':
+				zero();
+				break;
+
+			case 'c':
+				calibration();
+				break;
+
+			case 'e':
+				trySpeeds();
+				break;
+		}
+	}
 }
